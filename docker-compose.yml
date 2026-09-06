@@ -1,0 +1,30 @@
+# Two-service stack: FastAPI backend + nginx-served React frontend.
+# Run: docker compose up --build
+# Then open http://localhost:5173
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: sqlite:////data/cloudsentrys.db
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-AIzaSyDIjCaIDWJtUKg6sPM1IWBFv5Rw7P9Dtbc}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+    volumes:
+      - cloudsentrys_data:/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  cloudsentrys_data:
